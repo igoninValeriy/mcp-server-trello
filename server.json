@@ -12,7 +12,7 @@
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
-      "identifier": "@igoninvaleriy/mcp-server-trello",
+      "identifier": "@dekause/mcp-server-trello",
       "version": "1.8.0",
       "transport": {
         "type": "stdio"
