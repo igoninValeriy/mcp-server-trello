@@ -138,7 +138,36 @@ describe('getCardsByList nameFilter', () => {
     const cards = await client.getCardsByList('list1', 'name,idList', 'FEAT');
     expect(cards).toHaveLength(2);
     expect((client as any).axiosInstance.get).toHaveBeenCalledWith('/lists/list1/cards', {
-      params: { fields: 'name,idList' },
+      params: { filter: 'all', fields: 'name,idList' },
+    });
+  });
+});
+
+describe('getCardsByList archive filter', () => {
+  let client: TrelloClient;
+
+  beforeEach(() => {
+    client = createMockedClient();
+  });
+
+  it('defaults to filter "all" (active + archived) when omitted', async () => {
+    await client.getCardsByList('list1');
+    expect((client as any).axiosInstance.get).toHaveBeenCalledWith('/lists/list1/cards', {
+      params: { filter: 'all' },
+    });
+  });
+
+  it('passes filter "open" to fetch active cards only', async () => {
+    await client.getCardsByList('list1', undefined, undefined, 'open');
+    expect((client as any).axiosInstance.get).toHaveBeenCalledWith('/lists/list1/cards', {
+      params: { filter: 'open' },
+    });
+  });
+
+  it('passes filter "closed" to fetch archived cards only', async () => {
+    await client.getCardsByList('list1', undefined, undefined, 'closed');
+    expect((client as any).axiosInstance.get).toHaveBeenCalledWith('/lists/list1/cards', {
+      params: { filter: 'closed' },
     });
   });
 });

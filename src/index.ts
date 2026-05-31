@@ -6,6 +6,13 @@ import { TrelloClient } from './trello-client.js';
 import { TrelloHealthEndpoints, HealthEndpointSchemas } from './health/health-endpoints.js';
 import { formatCardListResponse } from './card-list-preview.js';
 
+const archiveFilterSchema = z
+  .enum(['all', 'open', 'closed'])
+  .optional()
+  .describe(
+    'Archive-state filter. Defaults to "all": returns both active AND archived (historical) entities. Use "open" for active only, or "closed" for archived only.'
+  );
+
 class TrelloServer {
   private server: McpServer;
   private trelloClient: TrelloClient;
@@ -70,13 +77,14 @@ class TrelloServer {
       {
         title: 'Get Cards by List ID',
         description:
-          'Fetch cards from a specific Trello list on a specific board. Descriptions are previewed by default to keep responses compact; set fields without "desc" to omit descriptions, or increase descMaxLength/omitDescThresholdBytes and use get_card for full details.',
+          'Fetch cards from a specific Trello list on a specific board. By default returns both active AND archived cards (use filter to narrow). Descriptions are previewed by default to keep responses compact; set fields without "desc" to omit descriptions, or increase descMaxLength/omitDescThresholdBytes and use get_card for full details.',
         inputSchema: {
           boardId: z
             .string()
             .optional()
             .describe('ID of the Trello board (uses default if not provided)'),
           listId: z.string().describe('ID of the Trello list'),
+          filter: archiveFilterSchema,
           fields: z
             .string()
             .optional()
@@ -105,9 +113,9 @@ class TrelloServer {
             ),
         },
       },
-      async ({ listId, fields, nameFilter, descMaxLength, omitDescThresholdBytes }) => {
+      async ({ listId, fields, nameFilter, descMaxLength, omitDescThresholdBytes, filter }) => {
         try {
-          const cards = await this.trelloClient.getCardsByList(listId, fields, nameFilter);
+          const cards = await this.trelloClient.getCardsByList(listId, fields, nameFilter, filter);
           return formatCardListResponse(cards, { descMaxLength, omitDescThresholdBytes });
         } catch (error) {
           return this.handleError(error);
@@ -120,17 +128,18 @@ class TrelloServer {
       'get_lists',
       {
         title: 'Get Lists',
-        description: 'Retrieve all lists from the specified board',
+        description: 'Retrieve all lists from the specified board. By default returns both active AND archived lists (use filter to narrow).',
         inputSchema: {
           boardId: z
             .string()
             .optional()
             .describe('ID of the Trello board (uses default if not provided)'),
+          filter: archiveFilterSchema,
         },
       },
-      async ({ boardId }) => {
+      async ({ boardId, filter }) => {
         try {
-          const lists = await this.trelloClient.getLists(boardId);
+          const lists = await this.trelloClient.getLists(boardId, filter);
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(lists, null, 2) }],
           };
@@ -463,12 +472,14 @@ class TrelloServer {
       'get_my_cards',
       {
         title: 'Get My Cards',
-        description: 'Fetch all cards assigned to the current user',
-        inputSchema: {},
+        description: 'Fetch all cards assigned to the current user. By default returns both active AND archived cards (use filter to narrow).',
+        inputSchema: {
+          filter: archiveFilterSchema,
+        },
       },
-      async () => {
+      async ({ filter }) => {
         try {
-          const cards = await this.trelloClient.getMyCards();
+          const cards = await this.trelloClient.getMyCards(filter);
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(cards, null, 2) }],
           };
@@ -673,12 +684,14 @@ class TrelloServer {
       'list_boards',
       {
         title: 'List Boards',
-        description: 'List all boards the user has access to',
-        inputSchema: {},
+        description: 'List all boards the user has access to. By default returns both active AND archived boards (use filter to narrow).',
+        inputSchema: {
+          filter: archiveFilterSchema,
+        },
       },
-      async () => {
+      async ({ filter }) => {
         try {
-          const boards = await this.trelloClient.listBoards();
+          const boards = await this.trelloClient.listBoards(filter);
           return {
             content: [{ type: 'text' as const, text: JSON.stringify(boards, null, 2) }],
           };

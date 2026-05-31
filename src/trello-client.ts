@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, CreateAxiosDefaults } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import {
+  ArchiveFilter,
+  DEFAULT_ARCHIVE_FILTER,
   TrelloConfig,
   TrelloCard,
   TrelloList,
@@ -232,9 +234,9 @@ export class TrelloClient {
    * List all boards the user has access to
    * If allowedWorkspaceIds is configured, only returns boards from allowed workspaces
    */
-  async listBoards(): Promise<TrelloBoard[]> {
+  async listBoards(filter: ArchiveFilter = DEFAULT_ARCHIVE_FILTER): Promise<TrelloBoard[]> {
     return this.handleRequest(async () => {
-      const response = await this.axiosInstance.get('/members/me/boards');
+      const response = await this.axiosInstance.get('/members/me/boards', { params: { filter } });
       const boards: TrelloBoard[] = response.data;
 
       // Filter by allowed workspaces if restriction is enabled
@@ -336,10 +338,12 @@ export class TrelloClient {
   async getCardsByList(
     listId: string,
     fields?: string,
-    nameFilter?: string
+    nameFilter?: string,
+    filter: ArchiveFilter = DEFAULT_ARCHIVE_FILTER
   ): Promise<TrelloCard[]> {
     return this.handleRequest(async () => {
-      const params = fields ? { fields } : {};
+      const params: Record<string, string> = { filter };
+      if (fields) params.fields = fields;
       const response = await this.axiosInstance.get(`/lists/${listId}/cards`, { params });
       let cards: TrelloCard[] = response.data;
       const trimmed = nameFilter?.trim();
@@ -351,7 +355,7 @@ export class TrelloClient {
     });
   }
 
-  async getLists(boardId?: string): Promise<TrelloList[]> {
+  async getLists(boardId?: string, filter: ArchiveFilter = DEFAULT_ARCHIVE_FILTER): Promise<TrelloList[]> {
     const effectiveBoardId = boardId || this.activeConfig.boardId || this.defaultBoardId;
     if (!effectiveBoardId) {
       throw new McpError(
@@ -360,7 +364,9 @@ export class TrelloClient {
       );
     }
     return this.handleRequest(async () => {
-      const response = await this.axiosInstance.get(`/boards/${effectiveBoardId}/lists`);
+      const response = await this.axiosInstance.get(`/boards/${effectiveBoardId}/lists`, {
+        params: { filter },
+      });
       return response.data;
     });
   }
@@ -509,9 +515,9 @@ export class TrelloClient {
     });
   }
 
-  async getMyCards(): Promise<TrelloCard[]> {
+  async getMyCards(filter: ArchiveFilter = DEFAULT_ARCHIVE_FILTER): Promise<TrelloCard[]> {
     return this.handleRequest(async () => {
-      const response = await this.axiosInstance.get('/members/me/cards');
+      const response = await this.axiosInstance.get('/members/me/cards', { params: { filter } });
       return response.data;
     });
   }

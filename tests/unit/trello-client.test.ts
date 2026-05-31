@@ -97,7 +97,9 @@ describe('TrelloClient', () => {
       const client = createClient();
       const result = await client.listBoards();
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/members/me/boards');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/members/me/boards', {
+        params: { filter: 'all' },
+      });
       expect(result).toEqual(boards);
     });
   });
@@ -123,7 +125,9 @@ describe('TrelloClient', () => {
       const client = createClient();
       const result = await client.getLists('board123');
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/boards/board123/lists');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/boards/board123/lists', {
+        params: { filter: 'all' },
+      });
       expect(result).toEqual(lists);
     });
 
@@ -133,7 +137,9 @@ describe('TrelloClient', () => {
       const client = createClient({ boardId: 'active-board' });
       await client.getLists();
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/boards/active-board/lists');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/boards/active-board/lists', {
+        params: { filter: 'all' },
+      });
     });
 
     it('should throw when no board ID available', async () => {
@@ -305,7 +311,9 @@ describe('TrelloClient', () => {
       const client = createClient();
       await client.getMyCards();
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/members/me/cards');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/members/me/cards', {
+        params: { filter: 'all' },
+      });
     });
   });
 

@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **List Position Management**: `update_list_position(listId, position)` - Reorder lists on a board using Trello's fractional indexing ("top", "bottom", or a numeric position)
 - **List Management**: `update_list(listId, name?, closed?, subscribed?, idBoard?)` - Update a list's name, closed state, subscription, or move it to a different board
 
+## [1.8.0] - 2026-06-01
+
+> Fork of `@delorenj/mcp-server-trello`, published as `@igoninvaleriy/mcp-server-trello`.
+
+### Added
+- **Archived / historical data by default**: `get_cards_by_list_id`, `get_lists`, `get_my_cards`, and `list_boards` now accept an optional `filter` parameter (`all` | `open` | `closed`). Maps to Trello's `filter` query param.
+
+### Changed
+- **BREAKING (vs upstream default)**: the above read tools now return **both active AND archived** entities by default (`filter: "all"`). Pass `filter: "open"` to restrict to active-only (the previous upstream behavior), or `filter: "closed"` for archived-only.
+
 ## [1.7.0] - 2025-12-17
 
 ### Added

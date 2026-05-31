@@ -1,3 +1,14 @@
+/**
+ * Archive-state filter for read operations, mapping to Trello's `filter` query param.
+ * - `all`: active AND archived (historical) entities
+ * - `open`: only active entities
+ * - `closed`: only archived entities
+ */
+export type ArchiveFilter = 'all' | 'open' | 'closed';
+
+/** Default for this fork: include historical (archived) entities by default. */
+export const DEFAULT_ARCHIVE_FILTER: ArchiveFilter = 'all';
+
 export interface TrelloConfig {
   apiKey: string;
   token: string;
