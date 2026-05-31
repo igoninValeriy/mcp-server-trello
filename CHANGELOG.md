@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **List Position Management**: `update_list_position(listId, position)` - Reorder lists on a board using Trello's fractional indexing ("top", "bottom", or a numeric position)
 - **List Management**: `update_list(listId, name?, closed?, subscribed?, idBoard?)` - Update a list's name, closed state, subscription, or move it to a different board
 
+## [1.9.1] - 2026-06-01
+
+### Fixed
+- MCP `serverInfo.version` reported at `initialize` is now read from `package.json` at startup instead of a hardcoded value, so it stays in sync with the published version.
+
 ## [1.9.0] - 2026-06-01
 
 > Fork of `@delorenj/mcp-server-trello`, published as `@dekause/mcp-server-trello`.
