@@ -522,6 +522,44 @@ export class TrelloClient {
     });
   }
 
+  /**
+   * Full-text card search across accessible boards via Trello's /search engine.
+   * Supports Trello search operators in the query (is:archived, @me, #label, board:, due:, ...).
+   * Returns active and archived cards by default; `filter` narrows via is:open / is:archived.
+   */
+  async searchCards(
+    query: string,
+    options: {
+      boardId?: string;
+      limit?: number;
+      filter?: ArchiveFilter;
+      partial?: boolean;
+    } = {}
+  ): Promise<TrelloCard[]> {
+    const { boardId, limit = 50, filter = DEFAULT_ARCHIVE_FILTER, partial = true } = options;
+    const effectiveQuery =
+      filter === 'open'
+        ? `${query} is:open`
+        : filter === 'closed'
+          ? `${query} is:archived`
+          : query;
+    return this.handleRequest(async () => {
+      const params: Record<string, string | number | boolean> = {
+        query: effectiveQuery,
+        modelTypes: 'cards',
+        cards_limit: Math.min(Math.max(Math.trunc(limit), 1), 1000),
+        card_board: true,
+        card_list: true,
+        board_fields: 'name',
+        list_fields: 'name',
+        partial,
+      };
+      if (boardId) params.idBoards = boardId;
+      const response = await this.axiosInstance.get('/search', { params });
+      return (response.data?.cards ?? []) as TrelloCard[];
+    });
+  }
+
   async attachImageToCard(
     boardId: string | undefined,
     cardId: string,

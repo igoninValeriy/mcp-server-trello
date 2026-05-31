@@ -317,6 +317,74 @@ describe('TrelloClient', () => {
     });
   });
 
+  describe('searchCards', () => {
+    it('searches cards with sensible defaults', async () => {
+      const cards = [{ id: 'c1', name: 'Match' }];
+      mockAxiosInstance.get.mockResolvedValue({ data: { cards } });
+
+      const client = createClient();
+      const result = await client.searchCards('shipment');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/search', {
+        params: {
+          query: 'shipment',
+          modelTypes: 'cards',
+          cards_limit: 50,
+          card_board: true,
+          card_list: true,
+          board_fields: 'name',
+          list_fields: 'name',
+          partial: true,
+        },
+      });
+      expect(result).toEqual(cards);
+    });
+
+    it('appends is:open for the open filter and honors boardId/limit/partial', async () => {
+      mockAxiosInstance.get.mockResolvedValue({ data: { cards: [] } });
+
+      const client = createClient();
+      await client.searchCards('bug', { boardId: 'b1', limit: 5, filter: 'open', partial: false });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/search', {
+        params: {
+          query: 'bug is:open',
+          modelTypes: 'cards',
+          cards_limit: 5,
+          card_board: true,
+          card_list: true,
+          board_fields: 'name',
+          list_fields: 'name',
+          partial: false,
+          idBoards: 'b1',
+        },
+      });
+    });
+
+    it('appends is:archived for the closed filter and clamps the limit', async () => {
+      mockAxiosInstance.get.mockResolvedValue({ data: { cards: [] } });
+
+      const client = createClient();
+      await client.searchCards('invoice', { limit: 5000, filter: 'closed' });
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        '/search',
+        expect.objectContaining({
+          params: expect.objectContaining({ query: 'invoice is:archived', cards_limit: 1000 }),
+        })
+      );
+    });
+
+    it('returns an empty array when the response has no cards', async () => {
+      mockAxiosInstance.get.mockResolvedValue({ data: {} });
+
+      const client = createClient();
+      const result = await client.searchCards('nothing');
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('Comments', () => {
     it('addCommentToCard should post comment', async () => {
       mockAxiosInstance.post.mockResolvedValue({ data: { id: 'comment1' } });

@@ -123,6 +123,61 @@ class TrelloServer {
       }
     );
 
+    // Full-text search for cards across boards (Trello search engine + operators)
+    this.server.registerTool(
+      'search_cards',
+      {
+        title: 'Search Cards',
+        description:
+          'Full-text search for cards across all accessible boards using Trello\'s search engine. Supports Trello search operators in the query, e.g. "is:archived", "is:open", "@me", "#label", "board:Name", "list:Name", "due:overdue", "has:attachments", "edited:week", "created:month". By default returns both active AND archived cards (use filter to narrow). Each result includes its board and list name for historical context.',
+        inputSchema: {
+          query: z
+            .string()
+            .trim()
+            .min(1, 'query must not be empty')
+            .describe(
+              'Search text. Supports Trello operators: is:archived, is:open, @me, #label, board:Name, list:Name, due:overdue, has:attachments, edited:week, created:month.'
+            ),
+          boardId: z
+            .string()
+            .optional()
+            .describe('Restrict the search to a single board (searches all accessible boards if omitted).'),
+          limit: z
+            .number()
+            .int()
+            .min(1)
+            .max(1000)
+            .optional()
+            .describe('Maximum number of cards to return (default 50, max 1000).'),
+          filter: archiveFilterSchema,
+          partial: z
+            .boolean()
+            .optional()
+            .describe('Match partial words (default true). Set false for whole-word matching only.'),
+          descMaxLength: z
+            .number()
+            .int()
+            .min(0)
+            .optional()
+            .describe('Maximum description preview length per card. Defaults to 200.'),
+          omitDescThresholdBytes: z
+            .number()
+            .int()
+            .positive()
+            .optional()
+            .describe('Approximate response size threshold before descriptions are omitted. Defaults to 50000 bytes.'),
+        },
+      },
+      async ({ query, boardId, limit, filter, partial, descMaxLength, omitDescThresholdBytes }) => {
+        try {
+          const cards = await this.trelloClient.searchCards(query, { boardId, limit, filter, partial });
+          return formatCardListResponse(cards, { descMaxLength, omitDescThresholdBytes });
+        } catch (error) {
+          return this.handleError(error);
+        }
+      }
+    );
+
     // Get all lists from a board
     this.server.registerTool(
       'get_lists',
