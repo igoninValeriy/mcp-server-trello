@@ -1,8 +1,8 @@
 {
-  "name": "@delorenj/mcp-server-trello",
-  "mcpName": "io.github.delorenj/mcp-server-trello",
+  "name": "@igoninvaleriy/mcp-server-trello",
+  "mcpName": "io.github.igoninValeriy/mcp-server-trello",
   "version": "1.7.1",
-  "description": "An MCP server for Trello boards, powered by Bun for maximum performance.",
+  "description": "An MCP server for Trello boards, powered by Bun for maximum performance. Fork of @delorenj/mcp-server-trello.",
   "keywords": [
     "mcp",
     "trello",
@@ -17,12 +17,16 @@
     "task-management",
     "kanban"
   ],
-  "author": "Jarad DeLorenzo",
+  "author": "igoninValeriy",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/delorenj/mcp-server-trello/issues"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/igoninValeriy/mcp-server-trello.git"
   },
-  "homepage": "https://github.com/delorenj/mcp-server-trello#readme",
+  "bugs": {
+    "url": "https://github.com/igoninValeriy/mcp-server-trello/issues"
+  },
+  "homepage": "https://github.com/igoninValeriy/mcp-server-trello#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
     "axios": "^1.13.2",
