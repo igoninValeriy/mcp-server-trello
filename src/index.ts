@@ -255,6 +255,65 @@ class TrelloServer {
       }
     );
 
+    // Get comments authored BY a member (how a person gives feedback)
+    this.server.registerTool(
+      'get_member_comments',
+      {
+        title: 'Get Member Comments',
+        description:
+          'Fetch comments authored BY a specific member across boards (filter=commentCard on ' +
+          '/members/{id}/actions). Cheap way to see how a person gives feedback, without scanning ' +
+          'every card. memberId accepts "me", a username, or a member id.',
+        inputSchema: {
+          memberId: z
+            .string()
+            .describe('Whose comments to fetch: "me", a username, or a member id'),
+          boardId: z
+            .string()
+            .optional()
+            .describe('Optional: keep only comments left on this board (client-side filter)'),
+          limit: z
+            .number()
+            .optional()
+            .default(1000)
+            .describe('Max comments to fetch (Trello caps at 1000; paginate older via before)'),
+          since: z
+            .string()
+            .optional()
+            .describe('Only return comments after this date (ISO 8601) or action ID'),
+          before: z
+            .string()
+            .optional()
+            .describe('Only return comments before this date (ISO 8601) or action ID'),
+        },
+      },
+      async ({ memberId, boardId, limit, since, before }) => {
+        try {
+          const actions = await this.trelloClient.getMemberComments(
+            memberId,
+            limit,
+            since,
+            before,
+            boardId
+          );
+          const comments = actions.map((a) => ({
+            commentId: a.id,
+            date: a.date,
+            boardId: a.data?.board?.id,
+            boardName: a.data?.board?.name,
+            cardId: a.data?.card?.id,
+            cardName: a.data?.card?.name,
+            text: a.data?.text,
+          }));
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify(comments, null, 2) }],
+          };
+        } catch (error) {
+          return this.handleError(error);
+        }
+      }
+    );
+
     // Add a new card to a list
     this.server.registerTool(
       'add_card_to_list',

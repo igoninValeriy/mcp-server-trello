@@ -627,6 +627,26 @@ Retrieve all comments from a specific card without fetching all card data.
 }
 ```
 
+#### get\_member\_comments
+
+Fetch comments authored **by** a member across boards, without scanning every card. Backed by
+`/members/{id}/actions?filter=commentCard`, so it returns only that person's comments — a cheap
+way to review how someone gives feedback. Returns `{ commentId, date, boardId, boardName, cardId,
+cardName, text }` per comment.
+
+```typescript
+{
+  name: 'get_member_comments',
+  arguments: {
+    memberId: string,  // Whose comments to fetch: "me", a username, or a member id
+    boardId?: string,  // Optional: keep only comments left on this board (client-side filter)
+    limit?: number,    // Optional: max comments to fetch (Trello caps at 1000; default 1000)
+    since?: string,    // Optional: only comments after this date (ISO 8601) or action ID
+    before?: string    // Optional: only comments before this date (ISO 8601) or action ID
+  }
+}
+```
+
 
 ### list\_boards
 

@@ -390,6 +390,31 @@ export class TrelloClient {
     });
   }
 
+  // Fetch comments authored BY a member across boards, without scanning cards.
+  // Uses /members/{id}/actions?filter=commentCard; memberId accepts "me", a username, or an id.
+  // Optional boardId narrows the result to a single board client-side.
+  async getMemberComments(
+    memberId: string,
+    limit: number = 1000,
+    since?: string,
+    before?: string,
+    boardId?: string
+  ): Promise<TrelloAction[]> {
+    return this.handleRequest(async () => {
+      const params: Record<string, string | number> = {
+        filter: 'commentCard',
+        limit: Math.min(Math.max(limit, 1), 1000),
+      };
+      if (since) params.since = since;
+      if (before) params.before = before;
+      const response = await this.axiosInstance.get(`/members/${memberId}/actions`, {
+        params,
+      });
+      const actions: TrelloAction[] = response.data;
+      return boardId ? actions.filter((a) => a.data?.board?.id === boardId) : actions;
+    });
+  }
+
   async addCard(
     boardId: string | undefined,
     params: {
