@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Member Comments**: `get_member_comments(memberId, boardId?, limit?, since?, before?)` - Fetch comments authored BY a member across boards via `/members/{id}/actions?filter=commentCard`. Returns only that person's comments (commentId, date, board, card, text) — a cheap way to review how someone gives feedback without scanning every card. `memberId` accepts "me", a username, or a member id.
 - **List Position Management**: `update_list_position(listId, position)` - Reorder lists on a board using Trello's fractional indexing ("top", "bottom", or a numeric position)
 - **List Management**: `update_list(listId, name?, closed?, subscribed?, idBoard?)` - Update a list's name, closed state, subscription, or move it to a different board
 
